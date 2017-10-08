@@ -158,27 +158,33 @@ def lissage_laplace(gram,fich_txt,boolres):
 #print(lissage_laplace(bi_grmo("english-training.txt",True),"english-training.txt",True))
 
 
-def interpola_linear(gram,fich_txt,boolres):
+def interpola_linear(gram,fich_txt):
 
-    v_corpus = len(empty_dico(fich_txt))
+    uni=uni_gr(fich_txt,True)
+    usegram=copy.deepcopy(gram)
 
-    for key in gram:
+    for key in usegram:
 
         break
 
     if (len(key) == 1): #je suis dans le cas d'une interpolation lineaire de Bi-Gram
 
-        for key in gram:
+        for key in usegram:
 
-            for key2 in gram[key]:
+            for key2 in usegram[key]:
 
-                gram[key][key2]= (1/2)*gram[key][key2] + (1/2)*uni_gr(fich_txt,True)[key2]
+                usegram[key][key2] = (1/2)*usegram[key][key2] + (1/2)*uni[key2]
 
     if (len(key) == 2):  # je suis dans le cas d'une interpolation lineaire de tri-Gram
 
-        for key in gram:
+        bi_gram = bi_grmo(fich_txt,False)
 
-            for key2 in gram[key]:
+        for key in usegram:
 
-                gram[key][key2] =  (1/3) * gram[key][key2] + (1 / 3) * bi_grmo(fich_txt,False)[key[1]][key2] + (1 / 3) * uni_gr(fich_txt,True)[key2]
+            for key2 in usegram[key]:
 
+                usegram[key][key2] =  (1/3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
+
+    return usegram
+
+print(interpola_linear(tri_grmo("english-training.txt",False),"english-training.txt"))
