@@ -1,1 +1,1 @@
-# Projet numéro 1 de: Traitement du langage naturel 
+# Projet numéro 1: Traitement du langage naturel 
