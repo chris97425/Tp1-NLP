@@ -37,6 +37,7 @@ def get_wfb_info(pays,attribut):
 
     if attribut=='NATIONAL_ANTHEM':
 
+
         essai = re.search(attributDico[attribut]+":</a>[\n\t\w\W]*;\">\".*\((.*)\)</s",textAnalyse)
 
         if (essai == None):
