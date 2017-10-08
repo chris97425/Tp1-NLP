@@ -15,20 +15,44 @@ def empty_dico(fich_txt):
 
 ##################################################################unigramme####################
 
-def uni_gr(fich_txt):
+def uni_gr(fich_txt,boolres):
 
-    corpus_empty = empty_dico(fich_txt)
+    corpus_empty_count = empty_dico(fich_txt)
+
+    i=0
 
     with open(fich_txt, "r") as fileobj:
+
         for line in fileobj:
+
            for ch in line:
-            corpus_empty[ch]+=1
-    return corpus_empty
+
+            i+=1
+            corpus_empty_count[ch]+=1
+
+    #print(i)
+    corpus_empty_prob=copy.deepcopy(corpus_empty_count)
+
+    for key in corpus_empty_prob:
+
+        corpus_empty_prob[key]=corpus_empty_prob[key]/i
+
+    if (boolres == False):
+
+        return corpus_empty_count
+
+    else:
+
+        return corpus_empty_prob
+
+
+#print(uni_gr("english-training.txt",True))
+
 
 ####################################################bigrammamammammammmammmammmammmammma##################
 def bi_grmo(fich_txt,boolret):
 
-    uni=uni_gr(fich_txt)
+    uni=uni_gr(fich_txt,False)
     textdoc = open(fich_txt, "r").read()
     emptyd=empty_dico(fich_txt)
     bigr_prob=copy.deepcopy(emptyd)
@@ -48,18 +72,21 @@ def bi_grmo(fich_txt,boolret):
         bigr_count[textdoc[i]][textdoc[i+1]]+=1
 
     if(boolret==False):
+
         return bigr_prob
+
     else:
+
         return bigr_count
 
 #################################################################trigramme ##################################
 
 def tri_grmo(fich_txt,boolre):
-    c=0
+
+
     textdoc = open(fich_txt, "r").read()
     pro_bi_count = bi_grmo(fich_txt,False)
     dico_tri_gr = {}
-    dico_tri_count={}
 
     for i in range(0, len(textdoc)-2):
 
@@ -76,9 +103,13 @@ def tri_grmo(fich_txt,boolre):
 
         dico_tri_gr[textdoc[i]+textdoc[i+1]][textdoc[i+2]] += 1/pro_bi_count[textdoc[i]][textdoc[i+1]]
         dico_tri_count[textdoc[i] + textdoc[i + 1]][textdoc[i + 2]] += 1
+
     if (boolre==True):
+
         return dico_tri_count
+
     else:
+
         return dico_tri_gr
 
     return dico_tri_gr
@@ -93,7 +124,7 @@ def lissage_laplace(gram,fich_txt,boolres):
 
     if (len(key)==1):
 
-        count_char = uni_gr(fich_txt)
+        count_char = uni_gr(fich_txt,False)
 
         for key in gram:
 
@@ -124,4 +155,30 @@ def lissage_laplace(gram,fich_txt,boolres):
                     gram[key][key2] = ((gram[key][key2]+1) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + v_corpus)
 
     return gram
-print(lissage_laplace(bi_grmo("english-training.txt",True),"english-training.txt",True))
+#print(lissage_laplace(bi_grmo("english-training.txt",True),"english-training.txt",True))
+
+
+def interpola_linear(gram,fich_txt,boolres):
+
+    v_corpus = len(empty_dico(fich_txt))
+
+    for key in gram:
+
+        break
+
+    if (len(key) == 1): #je suis dans le cas d'une interpolation lineaire de Bi-Gram
+
+        for key in gram:
+
+            for key2 in gram[key]:
+
+                gram[key][key2]= (1/2)*gram[key][key2] + (1/2)*uni_gr(fich_txt,True)[key2]
+
+    if (len(key) == 2):  # je suis dans le cas d'une interpolation lineaire de tri-Gram
+
+        for key in gram:
+
+            for key2 in gram[key]:
+
+                gram[key][key2] =  (1/3) * gram[key][key2] + (1 / 3) * bi_grmo(fich_txt,False)[key[1]][key2] + (1 / 3) * uni_gr(fich_txt,True)[key2]
+
