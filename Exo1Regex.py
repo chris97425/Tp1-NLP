@@ -43,7 +43,6 @@ def get_wfb_info(pays,attribut):
         if (essai == None):
 
             essai = re.search(attributDico[attribut] + ":</a>[\n\t\w\W]*;\">\"?(.*)\"</s", textAnalyse)
-
         print(essai.group(1))
         return essai.group(1)
 
@@ -51,6 +50,7 @@ def get_wfb_info(pays,attribut):
 
         essai = re.search(attributDico[attribut]+":[\W\w\t]*?male:[\W\w\t]*?\">([\d\W]*%)", textAnalyse)
         print(essai.group(1))
+
         return essai.group(1)
 
     if attribut == 'EXPORTS':
@@ -152,5 +152,4 @@ def get_wfb_info(pays,attribut):
             return "No_diplomatic_rep"
 
     fichWork.close()
-
 ##############Faire une fonction menu qui permet de lancer le test ou bien un attribut pour un pays choisie

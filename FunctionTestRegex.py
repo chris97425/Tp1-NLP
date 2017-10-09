@@ -1,7 +1,8 @@
-import csv, t1
-
+import csv, sys
+import Exo1Regex
+t1 = Exo1Regex
 listatt=["PREC_NATIONAL_ANTHEM","PREC_LITERACY","PREC_EXPORTS","PREC_GDP_REAL_GROWTH_RATE","PREC_GDP_PER_CAPITA","PREC_NATURAL_HAZARDS","PREC_EXECUTIVE_BRANCH","PREC_DIPLOMATIC_REPRESENTATION_FROM_US"  ]
-nbpays = 9
+nbpays = 10
 with open('wfb_test2.1.csv', newline='') as csvfile:
 
     spamreader = csv.reader(csvfile, delimiter=';', quotechar='|')

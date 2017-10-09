@@ -78,7 +78,7 @@ def bi_grmo(fich_txt,boolret):
     else:
 
         return bigr_count
-#print(bi_grmo("english-training.txt",False)[" "]["c"])
+print(bi_grmo("english-training.txt",True))
 #################################################################trigramme ##################################
 
 def tri_grmo(fich_txt,boolre):
@@ -194,5 +194,5 @@ def interpola_linear(gram,fich_txt):
     return usegram
 
 
-print(interpola_linear(tri_grmo("english-training.txt",False),"english-training.txt"))
+#print(interpola_linear(tri_grmo("english-training.txt",False),"english-training.txt"))
 
