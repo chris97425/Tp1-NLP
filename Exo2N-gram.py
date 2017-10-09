@@ -45,7 +45,7 @@ def uni_gr(fich_txt,boolres):
 
         return corpus_empty_prob
 
-
+#print(uni_gr("english-training.txt",True)["c"])
 #print(uni_gr("english-training.txt",True))
 
 
@@ -78,14 +78,14 @@ def bi_grmo(fich_txt,boolret):
     else:
 
         return bigr_count
-
+#print(bi_grmo("english-training.txt",False)[" "]["c"])
 #################################################################trigramme ##################################
 
 def tri_grmo(fich_txt,boolre):
 
 
     textdoc = open(fich_txt, "r").read()
-    pro_bi_count = bi_grmo(fich_txt,False)
+    pro_bi_count = bi_grmo(fich_txt,True)
     dico_tri_gr = {}
 
     for i in range(0, len(textdoc)-2):
@@ -112,9 +112,9 @@ def tri_grmo(fich_txt,boolre):
 
         return dico_tri_gr
 
-    return dico_tri_gr
 
-#print(tri_grmo("english-training.txt",True)["A "]["c"])
+
+#print(tri_grmo("english-training.txt",False)["A "]["c"])
 
 def lissage_laplace(gram,fich_txt,boolres):
 
@@ -162,6 +162,7 @@ def interpola_linear(gram,fich_txt):
 
     uni=uni_gr(fich_txt,True)
     usegram=copy.deepcopy(gram)
+   # print(usegram["A "]["c"])
 
     for key in usegram:
 
@@ -183,8 +184,15 @@ def interpola_linear(gram,fich_txt):
 
             for key2 in usegram[key]:
 
-                usegram[key][key2] =  (1/3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
+
+                usegram[key][key2] =  (1 / 3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
+
+
+
+
 
     return usegram
 
+
 print(interpola_linear(tri_grmo("english-training.txt",False),"english-training.txt"))
+
