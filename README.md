@@ -1,1 +1,2 @@
-# Projet numéro 1: Traitement du langage naturel 
+# Projet numéro 1
+*Dans le cadre du cours Traitement du langage naturel Ulaval*
