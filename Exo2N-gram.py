@@ -1,18 +1,22 @@
-import os , copy
+import os , copy, codecs
 
-os.chdir("detect_langue/corpus_entrainement")
+os.chdir("detect_langue/")
 
 def empty_dico(fich_txt):
 
     corpus={}
 
-    with open(fich_txt, "r") as fileobj:
+    with codecs.open(fich_txt, 'r', 'utf-8') as fileobj:
 
         for line in fileobj:
+
             for ch in line:
+
                 corpus[ch] = 0
+
     return corpus
 
+#print(empty_dico("corpus_entrainement/portuguese-training.txt"))
 ##################################################################unigramme####################
 
 def uni_gr(fich_txt,boolres):
@@ -21,7 +25,7 @@ def uni_gr(fich_txt,boolres):
 
     i=0
 
-    with open(fich_txt, "r") as fileobj:
+    with codecs.open(fich_txt, 'r', 'utf-8') as fileobj:
 
         for line in fileobj:
 
@@ -45,7 +49,7 @@ def uni_gr(fich_txt,boolres):
 
         return corpus_empty_prob
 
-#print(uni_gr("english-training.txt",True)["c"])
+#print(uni_gr("corpus_entrainement/portuguese-training.txt",False))
 #print(uni_gr("english-training.txt",True))
 
 
@@ -53,7 +57,7 @@ def uni_gr(fich_txt,boolres):
 def bi_grmo(fich_txt,boolret):
 
     uni=uni_gr(fich_txt,False)
-    textdoc = open(fich_txt, "r").read()
+    textdoc = codecs.open(fich_txt, 'r', 'utf-8').read()
     emptyd=empty_dico(fich_txt)
     bigr_prob=copy.deepcopy(emptyd)
     bigr_count= copy.deepcopy(emptyd)
@@ -78,13 +82,13 @@ def bi_grmo(fich_txt,boolret):
     else:
 
         return bigr_count
-print(bi_grmo("english-training.txt",True))
+#print(bi_grmo("corpus_entrainement/portuguese-training.txt",True))
 #################################################################trigramme ##################################
 
 def tri_grmo(fich_txt,boolre):
 
 
-    textdoc = open(fich_txt, "r").read()
+    textdoc = codecs.open(fich_txt, 'r', 'utf-8').read()
     pro_bi_count = bi_grmo(fich_txt,True)
     dico_tri_gr = {}
 
@@ -187,12 +191,68 @@ def interpola_linear(gram,fich_txt):
 
                 usegram[key][key2] =  (1 / 3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
 
-
-
-
-
     return usegram
+#print(interpola_linear(bi_grmo("english-training.txt",False),"english-training.txt"))
+#print("\n\n\n\n\n\n <>----------------------------<> \n\n\n\n\n\n")
 
 
-#print(interpola_linear(tri_grmo("english-training.txt",False),"english-training.txt"))
+def perplexity(laporint,fich_txt,gram):
+
+    textdoc = open(fich_txt, "r").read()
+    laporintf=laporint
+    if (laporintf== "interpolation"):
+
+        dico_prob=copy.deepcopy(interpola_linear(gram,fich_txt))
+
+    else:
+
+        dico_prob=copy.deepcopy(lissage_laplace(gram,fich_txt,False))
+
+    return dico_prob
+    for key in laporintf:
+
+        break
+
+    if (len(key)==1):
+
+        for key in interpola_linear(laporintf,"english-training.txt"):
+
+            pass
+#print(perplexity("interpolation","english-training.txt",bi_grmo("english-training.txt",False)))
+
+def word_unknown(fich_tex_ent,fich_text_test):
+
+    unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,True))
+    unigram_test=copy.deepcopy(uni_gr(fich_text_test,True))
+    unigram_test["<UNK>"] = 0
+
+    for key in unigram_ent:
+        if (key in unigram_test):
+            pass
+        else:
+            print(unigram_ent["<UNK>"])
+            unigram_ent["<UNK>"] +=   unigram_test[key]
+
+    return unigram_ent
+
+#word_unknown("corpus_entrainement/english-training.txt","corpus_test/test1.txt")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
