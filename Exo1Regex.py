@@ -1,4 +1,4 @@
-import re , os
+import re , os, codecs
 
 def get_wfb_info(pays,attribut):
     """
@@ -13,25 +13,23 @@ def get_wfb_info(pays,attribut):
     listetitre = ["Prince","King","Queen","President"]
     repcour = os.getcwd()
     os.chdir("factbook/geos")
-    corel = open("aa.html", "r")
+    corel = codecs.open("aa.html", "r",'utf-8')
     allcorel = corel.read()
 
 
     sortie = True
     while sortie == True :
-
         filetoOpen = re.search('(..\.html)"> '+pays, allcorel)
 
         if (filetoOpen==None) or (pays == ""):
 
             pays = input("Je suis désolé mais le pays entré en paramètre n'ait pas dans ma base, verifier l'orthographe et rééssayer: ")
 
-
         else:
-
             sortie=False
+
     corel.close()
-    fichWork = open(filetoOpen.group(1), "r")
+    fichWork = codecs.open(filetoOpen.group(1), "r", 'utf-8')
     textAnalyse = fichWork.read()
     os.chdir(repcour)
 
@@ -152,4 +150,5 @@ def get_wfb_info(pays,attribut):
             return "No_diplomatic_rep"
 
     fichWork.close()
+print(get_wfb_info("France", "DIPLOMATIC_REPRESENTATION_FROM_US"))
 ##############Faire une fonction menu qui permet de lancer le test ou bien un attribut pour un pays choisie

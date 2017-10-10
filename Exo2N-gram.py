@@ -54,7 +54,7 @@ def uni_gr(fich_txt,boolres):
 
 
 ####################################################bigrammamammammammmammmammmammmammma##################
-def bi_grmo(fich_txt,boolret):
+def bi_grmo(fich_txt,boolret,test,fich_txt_test):
 
     uni=uni_gr(fich_txt,False)
     textdoc = codecs.open(fich_txt, 'r', 'utf-8').read()
@@ -64,6 +64,12 @@ def bi_grmo(fich_txt,boolret):
     for key in bigr_prob:
         bigr_prob[key]={}
         bigr_count[key]={}
+
+    if (test == True):
+
+        ukn = word_unknown(fich_txt,fich_txt_test)["<UKN>"]
+
+
 
     for key in bigr_prob:
 
@@ -120,7 +126,7 @@ def tri_grmo(fich_txt,boolre):
 
 #print(tri_grmo("english-training.txt",False)["A "]["c"])
 
-def lissage_laplace(gram,fich_txt,boolres):
+def lissage_laplace(gram,fich_txt,boolres,delta):
 
     v_corpus=len(empty_dico(fich_txt))
     for key in gram:
@@ -136,11 +142,11 @@ def lissage_laplace(gram,fich_txt,boolres):
 
                 if (boolres==True):
 
-                    gram[key][key2] = (gram[key][key2]+1)/(count_char[key]+v_corpus)
+                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char[key]+(v_corpus*delta))
 
                 else:
 
-                    gram[key][key2] = ((gram[key][key2]+1) * count_char[key]) / (count_char[key] + v_corpus)
+                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char[key]) / (count_char[key] + (v_corpus*delta))
 
     if (len(key)==2):
 
@@ -152,11 +158,11 @@ def lissage_laplace(gram,fich_txt,boolres):
 
                 if (boolres==True):
 
-                    gram[key][key2] = (gram[key][key2]+1)/(count_char2[key[0]][key[1]]+v_corpus)
+                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char2[key[0]][key[1]]+(v_corpus*delta))
 
                 else:
 
-                    gram[key][key2] = ((gram[key][key2]+1) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + v_corpus)
+                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + (v_corpus*delta))
 
     return gram
 #print(lissage_laplace(bi_grmo("english-training.txt",True),"english-training.txt",True))
@@ -196,9 +202,27 @@ def interpola_linear(gram,fich_txt):
 #print("\n\n\n\n\n\n <>----------------------------<> \n\n\n\n\n\n")
 
 
-def perplexity(laporint,fich_txt,gram):
+def word_unknown(fich_tex_ent,fich_text_test):
 
-    textdoc = open(fich_txt, "r").read()
+    unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,False))
+    unigram_test=copy.deepcopy(uni_gr(fich_text_test,False))
+    unigram_ent["<UNK>"] = 0
+    dico_unk={}
+
+    for key in unigram_test:
+        if (key in unigram_ent):
+            pass
+        else:
+            dico_unk[key]= unigram_test[key]
+            unigram_ent["<UNK>"] +=   unigram_test[key]
+    return unigram_ent
+
+print(word_unknown("corpus_entrainement/english-training.txt","corpus_test/test20.txt")["<UNK>"])
+
+
+def perplexity(laporint,fich_txt_test,gram_ent):
+
+    textdoc = codecs.open(fich_txt_test, "r","utf-8").read()
     laporintf=laporint
     if (laporintf== "interpolation"):
 
@@ -219,26 +243,6 @@ def perplexity(laporint,fich_txt,gram):
 
             pass
 #print(perplexity("interpolation","english-training.txt",bi_grmo("english-training.txt",False)))
-
-def word_unknown(fich_tex_ent,fich_text_test):
-
-    unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,True))
-    unigram_test=copy.deepcopy(uni_gr(fich_text_test,True))
-    unigram_test["<UNK>"] = 0
-
-    for key in unigram_ent:
-        if (key in unigram_test):
-            pass
-        else:
-            print(unigram_ent["<UNK>"])
-            unigram_ent["<UNK>"] +=   unigram_test[key]
-
-    return unigram_ent
-
-#word_unknown("corpus_entrainement/english-training.txt","corpus_test/test1.txt")
-
-
-
 
 
 
