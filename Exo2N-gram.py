@@ -16,7 +16,8 @@ def empty_dico(fich_txt):
 
     return corpus
 
-#print(empty_dico("corpus_entrainement/portuguese-training.txt"))
+#print(empty_dico("corpus_entrainement/english-training.txt"))
+#print(len(empty_dico("corpus_entrainement/english-training.txt")))
 ##################################################################unigramme####################
 
 #Ici je vais créer une fonction qui vas permettre de construire mon unigramme, boolres en fonction de sa valeur va renvoyer le compte des lettres
@@ -51,7 +52,7 @@ def uni_gr(fich_txt,boolres,test):
 
         return corpus_empty_prob
 
-print(len(uni_gr("corpus_entrainement/portuguese-training.txt",False,True)))
+#print(len(uni_gr("corpus_entrainement/portuguese-training.txt",False,True)))
 #print(uni_gr("english-training.txt",True))
 
 
@@ -107,12 +108,13 @@ def bi_grmo(fich_txt,boolret,test):
 #Ici je vais créer une fonction qui vas me permettre de construire un trigramme, fich_txt est notre fichier txt d'entraînement,
 #boolret est un booléen qui nous renvoie le trigramme sous forme de probabilité si False ou alors nous renvoie le trigramme sous forme de compte
 #test et fich_txt_test sont dans l'ordre un booléen pour préciser que l'on est dans la construction d'un bigramme en ajoutant
-def tri_grmo(fich_txt,boolre):
+def tri_grmo(fich_txt,boolre,test):
 
 
     textdoc = codecs.open(fich_txt, 'r', 'utf-8').read()
-    pro_bi_count = bi_grmo(fich_txt,True,False)
+    pro_bi_count = bi_grmo(fich_txt,True,True)
     dico_tri_gr = {}
+
 
     for i in range(0, len(textdoc)-2):
 
@@ -130,6 +132,13 @@ def tri_grmo(fich_txt,boolre):
         dico_tri_gr[textdoc[i]+textdoc[i+1]][textdoc[i+2]] += 1/pro_bi_count[textdoc[i]][textdoc[i+1]]
         dico_tri_count[textdoc[i] + textdoc[i + 1]][textdoc[i + 2]] += 1
 
+    if (test == True):
+        dico_tri_count["<UNK>"] = empty_dico(fich_txt)
+        for key in dico_tri_count:
+
+            dico_tri_count[key]["<UNK>"] = 0
+
+
     if (boolre==True):
 
         return dico_tri_count
@@ -140,53 +149,67 @@ def tri_grmo(fich_txt,boolre):
 
 
 
-#print(tri_grmo("corpus_entrainement/english-training.txt",False))
+#print(tri_grmo("corpus_entrainement/english-training.txt",True,True))
 #lissage de Laplace qui prend en entrée un n-gram un fichier text d'entraînement, boolres nous permet de renvoyer les nouvelles probabilités si True ou alors les nouveaux
 #compte si False, delta et le coefficient multiplicateur du lissage de Laplace
 def lissage_laplace(gram,fich_txt,boolres,delta):
 
     v_corpus=len(empty_dico(fich_txt))
 
-    print(v_corpus)
+    if ("<UNK>" in gram):
+        v_corpus+=1
+
     for key in gram:
         break
+        
+    if (isinstance(gram[key], int)):
 
-    if (len(key)==1):
+        for key in gram:
+
+            gram[key] = (gram[key] + (1 * delta)) / ( (v_corpus * delta))
+
+
+    elif (len(key)==1):
 
         count_char = uni_gr(fich_txt,False,True)
 
-
         for key in gram:
 
             for key2 in gram[key]:
 
                 if (boolres==True):
 
-                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char[key]+(len(gram)*delta))
-                    print(key,"et",key2," ont comme proba",gram[key][key2],'et la len(gram)',len(gram))
+                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char[key]+(v_corpus*delta))
 
                 else:
 
-                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char[key]) / (count_char[key] + (len(gram)*delta))
+                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char[key]) / (count_char[key] + (v_corpus*delta))
 
     if (len(key)==2):
 
-        count_char2 = bi_grmo(fich_txt,True)
-
+        count_char2 = bi_grmo(fich_txt,True,True)
         for key in gram:
 
             for key2 in gram[key]:
+                if(key == "<UNK>"):
 
-                if (boolres==True):
+                    gram[key][key2] = (0 + (1 * delta)) / (0 + (v_corpus * delta))
 
-                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char2[key[0]][key[1]]+(v_corpus*delta))
 
                 else:
 
-                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + (v_corpus*delta))
+                    if (boolres==True):
+
+                        gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char2[key[0]][key[1]]+(v_corpus*delta))
+
+                    else:
+
+                        gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + (v_corpus*delta))
+
 
     return gram
-print(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
+#print(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,2))
+print(lissage_laplace(uni_gr("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt",True,2))
 
 #Fonction d'interpolation linaire qui vas prendre en entré un n-Gram et un fichier test et nous renvoie un nouvelle unigramme lisser par interpolation linaire
 def interpola_linear(gram,fich_txt):
@@ -225,8 +248,8 @@ def interpola_linear(gram,fich_txt):
 #Fonction qui vas me permettre de savoir quelle sont le nombre de lettre differente entre les deux fichier
 def word_unknown(fich_tex_ent,fich_text_test):
 
-    unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,False))
-    unigram_test=copy.deepcopy(uni_gr(fich_text_test,False))
+    unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,False,False))
+    unigram_test=copy.deepcopy(uni_gr(fich_text_test,False,False))
     unigram_ent["<UNK>"] = 0
     dico_unk={}
 
@@ -238,7 +261,7 @@ def word_unknown(fich_tex_ent,fich_text_test):
             unigram_ent["<UNK>"] +=   unigram_test[key]
     return unigram_ent
 
-#print(word_unknown("corpus_entrainement/english-training.txt","corpus_test/test20.txt")["<UNK>"])
+#print(word_unknown("corpus_entrainement/english-training.txt","corpus_test/test20.txt"))
 
 
 def perplexity(laporint,fich_txt_test,gram_ent):
