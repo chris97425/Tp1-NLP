@@ -133,22 +133,20 @@ def get_wfb_info(pays,attribut):
             diplomatic = re.search(attributDico[attribut] + "[\w\W]*mailing address:[\w\W]*?>([\w\W]*?)([ADF]PO)", textAnalyse)
 
             if not(diplomatic == None):
-
                 print(diplomatic.group(1)+diplomatic.group(2))
                 return diplomatic.group(1)+diplomatic.group(2)
 
             diplomatic = re.search(attributDico[attribut] + "[\w\W]*mailing address:[\w\W]*?>(?:US Department of State, )?(B?[GPO .]*[\w\W]*?,[\w\W]*?) ?[,<]", textAnalyse)
 
             if not(diplomatic == None):
-
                 print(diplomatic.group(1))
                 return diplomatic.group(1)
 
         else:
 
-            print("No_diplomatic_rep")
+            ("No_diplomatic_rep")
             return "No_diplomatic_rep"
 
     fichWork.close()
-print(get_wfb_info("France", "DIPLOMATIC_REPRESENTATION_FROM_US"))
+get_wfb_info("France", "DIPLOMATIC_REPRESENTATION_FROM_US")
 ##############Faire une fonction menu qui permet de lancer le test ou bien un attribut pour un pays choisie

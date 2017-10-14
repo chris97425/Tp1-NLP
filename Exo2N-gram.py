@@ -1,4 +1,4 @@
-import os , copy, codecs
+import os , copy, codecs, math, re
 os.chdir("detect_langue/")
 
 #Ici je créer un dictionnaire vide contenant l'ensemble des lettres du corpus étudié sans doublon
@@ -44,6 +44,7 @@ def uni_gr(fich_txt,boolres,test):
         corpus_empty_prob[key]=corpus_empty_prob[key]/i
     if (test == True):
         corpus_empty_count["<UNK>"]=0
+        corpus_empty_prob["<UNK>"] = 0
     if (boolres == False):
 
         return corpus_empty_count
@@ -102,6 +103,7 @@ def bi_grmo(fich_txt,boolret,test):
     else:
 
         return bigr_count
+
 #print(bi_grmo("corpus_entrainement/english-training.txt",False,True))
 #################################################################trigramme ##################################
 
@@ -148,81 +150,93 @@ def tri_grmo(fich_txt,boolre,test):
         return dico_tri_gr
 
 
-
 #print(tri_grmo("corpus_entrainement/english-training.txt",True,True))
 #lissage de Laplace qui prend en entrée un n-gram un fichier text d'entraînement, boolres nous permet de renvoyer les nouvelles probabilités si True ou alors les nouveaux
 #compte si False, delta et le coefficient multiplicateur du lissage de Laplace
 def lissage_laplace(gram,fich_txt,boolres,delta):
 
     v_corpus=len(empty_dico(fich_txt))
-
-    if ("<UNK>" in gram):
+    usegram=copy.deepcopy(gram)
+    if ("<UNK>" in usegram):
         v_corpus+=1
-
-    for key in gram:
+    # print(v_corpus)
+    for key in usegram:
         break
-        
-    if (isinstance(gram[key], int)):
 
-        for key in gram:
+    if (isinstance(usegram[key], int)):
+        nbValue=0
+        nbProb=0
+        for key in usegram:
+            nbValue+=usegram[key]
+        # print(nbValue)
+        for key in usegram:
 
-            gram[key] = (gram[key] + (1 * delta)) / ( (v_corpus * delta))
-
+            usegram[key] = (usegram[key] + (1 * delta)) / (nbValue +(v_corpus * delta))
+        for key in usegram:
+            nbProb+= usegram[key]
+        #(nbProb)
+        #(usegram)
 
     elif (len(key)==1):
 
         count_char = uni_gr(fich_txt,False,True)
 
-        for key in gram:
-
-            for key2 in gram[key]:
+        for key in usegram:
+            #(count_char[key])
+            for key2 in usegram[key]:
 
                 if (boolres==True):
 
-                    gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char[key]+(v_corpus*delta))
+                    usegram[key][key2] = (usegram[key][key2]+(1*delta))/(count_char[key]+(v_corpus*delta))
 
                 else:
 
-                    gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char[key]) / (count_char[key] + (v_corpus*delta))
+                    usegram[key][key2] = ((usegram[key][key2]+(1*delta)) * count_char[key]) / (count_char[key] + (v_corpus*delta))
 
     if (len(key)==2):
 
         count_char2 = bi_grmo(fich_txt,True,True)
-        for key in gram:
+        for key in usegram:
 
-            for key2 in gram[key]:
+            for key2 in usegram[key]:
                 if(key == "<UNK>"):
 
-                    gram[key][key2] = (0 + (1 * delta)) / (0 + (v_corpus * delta))
+                    usegram[key][key2] = (0 + (1 * delta)) / (0 + (v_corpus * delta))
 
 
                 else:
 
                     if (boolres==True):
 
-                        gram[key][key2] = (gram[key][key2]+(1*delta))/(count_char2[key[0]][key[1]]+(v_corpus*delta))
+                        usegram[key][key2] = (usegram[key][key2]+(1*delta))/(count_char2[key[0]][key[1]]+(v_corpus*delta))
 
                     else:
 
-                        gram[key][key2] = ((gram[key][key2]+(1*delta)) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + (v_corpus*delta))
+                        usegram[key][key2] = ((usegram[key][key2]+(1*delta)) * count_char2[key[0]][key[1]]) / (count_char2[key[0]][key[1]] + (v_corpus*delta))
 
 
-    return gram
-#print(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,2))
-print(lissage_laplace(uni_gr("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt",True,2))
+    return usegram
+# text_file = open("Output.txt", "w", encoding="utf8")
+# text_file.write(str(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt", True, True),"corpus_entrainement/english-training.txt", True, 1)))
+# text_file.close()
+# print(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
+
+#print(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
+
+#print(lissage_laplace(uni_gr("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt",True,1))
 
 #Fonction d'interpolation linaire qui vas prendre en entré un n-Gram et un fichier test et nous renvoie un nouvelle unigramme lisser par interpolation linaire
 def interpola_linear(gram,fich_txt):
 
-    uni=uni_gr(fich_txt,True)
+    uni=uni_gr(fich_txt,True,True)
+    print(uni)
     usegram=copy.deepcopy(gram)
-   # print(usegram["A "]["c"])
 
     for key in usegram:
 
         break
 
-    if (len(key) == 1): #je suis dans le cas d'une interpolation lineaire de Bi-Gram
+    if (len(key) == 1):
 
         for key in usegram:
 
@@ -230,19 +244,27 @@ def interpola_linear(gram,fich_txt):
 
                 usegram[key][key2] = (1/2)*usegram[key][key2] + (1/2)*uni[key2]
 
-    if (len(key) == 2):  # je suis dans le cas d'une interpolation lineaire de tri-Gram
+    if (len(key) == 2):
 
         bi_gram = bi_grmo(fich_txt,False)
 
         for key in usegram:
 
+
             for key2 in usegram[key]:
 
+                if (key == "<UNK>"):
 
-                usegram[key][key2] =  (1 / 3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
+                    usegram[key] = (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
+
+                else:
+
+                    usegram[key][key2] =  (1 / 3) * usegram[key][key2] + (1 / 3) * bi_gram[key[1]][key2] + (1 / 3) * uni[key2]
 
     return usegram
-#print(interpola_linear(bi_grmo("english-training.txt",False),"english-training.txt"))
+
+
+#print(interpola_linear(bi_grmo("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt"))
 #print("\n\n\n\n\n\n <>----------------------------<> \n\n\n\n\n\n")
 
 #Fonction qui vas me permettre de savoir quelle sont le nombre de lettre differente entre les deux fichier
@@ -264,29 +286,202 @@ def word_unknown(fich_tex_ent,fich_text_test):
 #print(word_unknown("corpus_entrainement/english-training.txt","corpus_test/test20.txt"))
 
 
-def perplexity(laporint,fich_txt_test,gram_ent):
+def perplexity(laplace,fich_test):
 
-    textdoc = codecs.open(fich_txt_test, "r","utf-8").read()
-    laporintf=laporint
-    if (laporintf== "interpolation"):
 
-        dico_prob=copy.deepcopy(interpola_linear(gram,fich_txt))
+    uselaplace=copy.deepcopy(laplace)
+    # print(uselaplace)
+    log=0
 
-    else:
+    test = codecs.open(fich_test, 'r', 'utf-8').read()
+    v_corpus = len(test)
+    # print(v_corpus)
 
-        dico_prob=copy.deepcopy(lissage_laplace(gram,fich_txt,False))
-
-    return dico_prob
-    for key in laporintf:
-
+    for key in uselaplace:
         break
 
-    if (len(key)==1):
+    if (isinstance(uselaplace[key], float)):
 
-        for key in interpola_linear(laporintf,"english-training.txt"):
+        for line in test:
+
+            for ch in line:
+
+                if not(ch in uselaplace):
+
+                    #print(ch)
+                    log += math.log(uselaplace["<UNK>"])
+
+                else:
+
+                    log += math.log(uselaplace[ch])
+
+                    #print(uselaplace[ch])
+                    #print(log)
+                    #print(uselaplace[ch],"est",ch)
+
+        # print("la valeur de log",log)
+        valeur1 = (-1/v_corpus)*log
+        pp =  math.exp(valeur1)
+        # print("La perp",pp)
+
+    elif (len(key) == 1):
+
+        for i in range(0,len(test)-1):
+
+            key1=test[i]
+            key2=test[i+1]
+
+            if not(test[i] in uselaplace):
+                key1="<UNK>"
+                A=test[i]
+            if not(test[i+1] in uselaplace):
+                key2 = "<UNK>"
+                B = test[i+1]
+
+            log += math.log(uselaplace[key1][key2])
+
+        print("la valeur de log", log)
+        valeur1 = (-1 / v_corpus) * log
+        pp = math.exp(valeur1)
+        print(pp)
+
+    if (len(key) == 2):
+
+        for i in range(0, len(test) - 2):
+            A=""
+            B=""
+            key1 = test[i]+test[i+1]
+
+            key2 = test[i + 2]
+
+            if not(key1 in uselaplace):
+                print(key1)
+                A = key1
+                key1 = "<UNK>"
+
+            if not(key2 in uselaplace[key]):
+                print(key2)
+                B = key2
+                key2 = "<UNK>"
+
+            log += math.log(uselaplace[key1][key2])
+
+            print(key1, key2, uselaplace[key1][key2])
+
+        valeur1 = (-1 / v_corpus) * log
+        pp = math.exp(valeur1)
+        print("la perp",pp)
+
+    return pp
+
+def detect_language(n,langue,fich_txt,fich_test):
+
+
+
+    # if(n == "UNI"):
+    #
+    #     for i in langue:
+    #         print("---------", i)
+    #         lot[i] = lissage_laplace(uni_gr("corpus_entrainement/" + i, False, True), "corpus_entrainement/" + i, True,
+    #                                  1)
+    #     UNI=copy.deepcopy(uni_gr("corpus_entrainement" + fich_txt, False, True))
+    #
+    # #BI=perplexity(lissage_laplace(bi_grmo("corpus_entrainement"+fich_txt, True, True),"corpus_entrainement"+fich_txt, True, 1), "corpus_test/"+fich_test)
+    #
+    # #TRI=perplexity(lissage_laplace(tri_grmo("corpus_entrainement"+fich_txt, True, True),"corpus_entrainement"+fich_txt, True, 1), "corpus_test/"+fich_test)
+
+
+    listtest = os.listdir('corpus_test/')
+    listent = os.listdir('corpus_entrainement/')
+    #print(listent)
+    langue = {}
+
+    for j in listent:
+
+
+
+        if (j == ".DS_Store"):
 
             pass
-#print(perplexity("interpolation","english-training.txt",bi_grmo("english-training.txt",False)))
+
+        else:
+
+            langue[j] = {}
+
+            for i in listtest:
+
+                if (i==".DS_Store"):
+
+                    pass
+
+                else:
+
+
+                    langue[j][i]={n: perplexity(lissage_laplace(uni_gr("corpus_entrainement/" + j, False, True),"corpus_entrainement/" + j, True, 1),"corpus_test/" + i)}
+                    # print("la valeur de A",A)
+    #
+
+    # lot={}
+    #
+    #
+    # for i in langue:
+    #
+    # n=perplexity(lissage_laplace(uni_gr("corpus_entrainement" + fich_txt, False, True), "corpus_entrainement" + fich_txt, True,1), "corpus_test/" + fich_test)
+
+
+    return langue
+
+
+#print(detect_language("UNI",None,None,None))
+
+
+
+def prédiction(langue,n):
+    i=0
+    listkey= []
+    listkeyKey=[]
+
+    for key in langue:
+
+        listkey+=[key]
+
+
+    for key in langue[key]:
+
+        listkeyKey+=[key]
+
+
+    for key in listkeyKey:
+
+        b=1000000000.0
+
+        for key2 in listkey:
+
+
+            a=langue[key2][key]
+            print("voila",float(a[n]))
+
+            if(float(a[n])<=b):
+
+                b=float(a[n])
+                print("------<>")
+                c=key2
+
+        i+=1
+
+        a=re.search("([\w\W]*)-", c)
+
+        print("Pour un",n,"-gram la langue prédite du fichier: ",key,"\n Est le\la:",a.group(1))
+
+prédiction(detect_language("UNI",None,None,None),"UNI")
+
+
+
+
+
+
+
+
 
 
 
