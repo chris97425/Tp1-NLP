@@ -1,7 +1,9 @@
+#Version de python utilisé 3.6.1
+
 import os , copy, codecs, math, re
+
 os.chdir("detect_langue/")
 
-#Ici je créer un dictionnaire vide contenant l'ensemble des lettres du corpus étudié sans doublon
 def empty_dico(fich_txt):
 
     corpus={}
@@ -15,13 +17,13 @@ def empty_dico(fich_txt):
                 corpus[ch] = 0
 
     return corpus
-
+#Ici je crée un dictionnaire vide contenant l'ensemble des lettres du corpus étudié sans doublon
+#Exemple
 #print(empty_dico("corpus_entrainement/english-training.txt"))
-#print(len(empty_dico("corpus_entrainement/english-training.txt")))
-##################################################################unigramme####################
 
-#Ici je vais créer une fonction qui vas permettre de construire mon unigramme, boolres en fonction de sa valeur va renvoyer le compte des lettres
-#ou alors leurs probabilités, fich_txt sera le fichier texte d'entraînenemnt
+##################################################################Construction d'un unigramme####################
+
+
 def uni_gr(fich_txt,boolres,test):
 
     corpus_empty_count = empty_dico(fich_txt)
@@ -52,14 +54,15 @@ def uni_gr(fich_txt,boolres,test):
     else:
 
         return corpus_empty_prob
+# Ici je vais créer une fonction qui vas permettre de construire mon unigramme.
+# Si boolres vaut False je renvoie l'unigram avec les compte sinon avec les probabilités
+#Si test vaut true cela veut dire que j'inclue <unk> pour le lissage
 
 #print(len(uni_gr("corpus_entrainement/portuguese-training.txt",False,True)))
-#print(uni_gr("english-training.txt",True))
+
+##################################################################Construction d'un bigramme####################
 
 
-#Ici je vais créer une fonction qui vas me permettre de construire un bigramme, fich_txt est notre fichier txt d'entraînement,
-#boolret est un booléen qui nous renvoie le bigramme sous forme de probabilité si False ou alors nous renvoie le bigramme sous forme de compte
-#test et fich_txt_test sont dans l'ordre un booléen pour préciser que l'on est dans la construction d'un bigramme en ajoutant
 def bi_grmo(fich_txt,boolret,test):
 
     uni=uni_gr(fich_txt,False,False)
@@ -103,13 +106,17 @@ def bi_grmo(fich_txt,boolret,test):
     else:
 
         return bigr_count
+# Ici je vais créer une fonction qui vas me permettre de construire un bigramme
+# fich_txt est notre fichier txt d'entraînement
+# boolret est un booléen qui nous renvoie le bigramme sous forme de probabilité si False ou alors nous renvoie le bigramme sous forme de compte
+# test  est la pour préciser que l'on est dans la construction d'un bigramme pour le test en ajoutant <unk>
 
 #print(bi_grmo("corpus_entrainement/english-training.txt",False,True))
+#print(bi_grmo("corpus_entrainement/english-training.txt",False,False))
+
 #################################################################trigramme ##################################
 
-#Ici je vais créer une fonction qui vas me permettre de construire un trigramme, fich_txt est notre fichier txt d'entraînement,
-#boolret est un booléen qui nous renvoie le trigramme sous forme de probabilité si False ou alors nous renvoie le trigramme sous forme de compte
-#test et fich_txt_test sont dans l'ordre un booléen pour préciser que l'on est dans la construction d'un bigramme en ajoutant
+
 def tri_grmo(fich_txt,boolre,test):
 
 
@@ -128,18 +135,19 @@ def tri_grmo(fich_txt,boolre,test):
 
     dico_tri_count=copy.deepcopy(dico_tri_gr)
 
-
     for i in range(0, len(textdoc) - 2):
 
         dico_tri_gr[textdoc[i]+textdoc[i+1]][textdoc[i+2]] += 1/pro_bi_count[textdoc[i]][textdoc[i+1]]
         dico_tri_count[textdoc[i] + textdoc[i + 1]][textdoc[i + 2]] += 1
 
     if (test == True):
+
         dico_tri_count["<UNK>"] = empty_dico(fich_txt)
+        dico_tri_gr["<UNK>"] = empty_dico(fich_txt)
         for key in dico_tri_count:
 
             dico_tri_count[key]["<UNK>"] = 0
-
+            dico_tri_gr[key]["<UNK>"] = 0
 
     if (boolre==True):
 
@@ -149,10 +157,16 @@ def tri_grmo(fich_txt,boolre,test):
 
         return dico_tri_gr
 
+# Ici je vais créer une fonction qui vas me permettre de construire un trigramme
+# fich_txt est notre fichier txt d'entraînement
+# boolret est un booléen qui nous renvoie le trigramme sous forme de probabilité si False ou alors nous renvoie le trigramme sous forme de compte
+# test  est la pour préciser que l'on est dans la construction d'un bigramme pour le test en ajoutant <unk>
 
 #print(tri_grmo("corpus_entrainement/english-training.txt",True,True))
-#lissage de Laplace qui prend en entrée un n-gram un fichier text d'entraînement, boolres nous permet de renvoyer les nouvelles probabilités si True ou alors les nouveaux
-#compte si False, delta et le coefficient multiplicateur du lissage de Laplace
+
+
+#################################################################Laplace ##################################
+
 def lissage_laplace(gram,fich_txt,boolres,delta):
 
     v_corpus=len(empty_dico(fich_txt))
@@ -216,20 +230,28 @@ def lissage_laplace(gram,fich_txt,boolres,delta):
 
 
     return usegram
-# text_file = open("Output.txt", "w", encoding="utf8")
-# text_file.write(str(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt", True, True),"corpus_entrainement/english-training.txt", True, 1)))
-# text_file.close()
-# print(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
 
-#print(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
+
+#lissage de Laplace qui prend en entrée un n-gram sur fichier text d'entraînement
+# boolres nous permet de renvoyer les nouvelles probabilités si True ou alors les nouveaux comptes
+#Delta et le coefficient multiplicateur du lissage de Laplace
+
+#Lissage de Laplacce pour mes modèles trigram, bigram et unigram
+
+#print(lissage_laplace(tri_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
+
+# print(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1))
 
 #print(lissage_laplace(uni_gr("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt",True,1))
 
-#Fonction d'interpolation linaire qui vas prendre en entré un n-Gram et un fichier test et nous renvoie un nouvelle unigramme lisser par interpolation linaire
+
+#################################################################Interpolation linear##################################
+
 def interpola_linear(gram,fich_txt):
 
+
     uni=uni_gr(fich_txt,True,True)
-    print(uni)
+    # print(uni)
     usegram=copy.deepcopy(gram)
 
     for key in usegram:
@@ -242,14 +264,19 @@ def interpola_linear(gram,fich_txt):
 
             for key2 in usegram[key]:
 
-                usegram[key][key2] = (1/2)*usegram[key][key2] + (1/2)*uni[key2]
+                if (key == "<UNK>"):
+
+                    usegram[key] = (1 / 2) * uni[key2]
+
+                else:
+
+                    usegram[key][key2] = (1/2)*usegram[key][key2] + (1/2)*uni[key2]
 
     if (len(key) == 2):
 
-        bi_gram = bi_grmo(fich_txt,False)
+        bi_gram = bi_grmo(fich_txt,False,False)
 
         for key in usegram:
-
 
             for key2 in usegram[key]:
 
@@ -263,11 +290,16 @@ def interpola_linear(gram,fich_txt):
 
     return usegram
 
+#lissage par interpolation qui prend en entrée un n-gram sur fichier text d'entraînement avec un delta constant
+#Ne fonctionne que pour les vocabulaire fermé
 
-#print(interpola_linear(bi_grmo("corpus_entrainement/english-training.txt",False,True),"corpus_entrainement/english-training.txt"))
-#print("\n\n\n\n\n\n <>----------------------------<> \n\n\n\n\n\n")
+# print(interpola_linear(bi_grmo("corpus_entrainement/english-training.txt",True,False),"corpus_entrainement/english-training.txt"))
+# print(interpola_linear(tri_grmo("corpus_entrainement/english-training.txt",True,False),"corpus_entrainement/english-training.txt"))
 
-#Fonction qui vas me permettre de savoir quelle sont le nombre de lettre differente entre les deux fichier
+
+
+#Fonction qui vas me permettre de savoir quel  est le nombre de lettres differentes entre les deux fichiers
+
 def word_unknown(fich_tex_ent,fich_text_test):
 
     unigram_ent=copy.deepcopy(uni_gr(fich_tex_ent,False,False))
@@ -276,26 +308,31 @@ def word_unknown(fich_tex_ent,fich_text_test):
     dico_unk={}
 
     for key in unigram_test:
+
         if (key in unigram_ent):
+
             pass
+
         else:
+
             dico_unk[key]= unigram_test[key]
             unigram_ent["<UNK>"] +=   unigram_test[key]
+
     return unigram_ent
 
 #print(word_unknown("corpus_entrainement/english-training.txt","corpus_test/test20.txt"))
 
+##################################Calcul de la PP##########
 
 def perplexity(laplace,fich_test):
 
 
     uselaplace=copy.deepcopy(laplace)
-    # print(uselaplace)
     log=0
 
     test = codecs.open(fich_test, 'r', 'utf-8').read()
     v_corpus = len(test)
-    # print(v_corpus)
+
 
     for key in uselaplace:
         break
@@ -308,21 +345,14 @@ def perplexity(laplace,fich_test):
 
                 if not(ch in uselaplace):
 
-                    #print(ch)
                     log += math.log(uselaplace["<UNK>"])
 
                 else:
 
                     log += math.log(uselaplace[ch])
 
-                    #print(uselaplace[ch])
-                    #print(log)
-                    #print(uselaplace[ch],"est",ch)
-
-        # print("la valeur de log",log)
         valeur1 = (-1/v_corpus)*log
         pp =  math.exp(valeur1)
-        # print("La perp",pp)
 
     elif (len(key) == 1):
 
@@ -340,106 +370,119 @@ def perplexity(laplace,fich_test):
 
             log += math.log(uselaplace[key1][key2])
 
-        print("la valeur de log", log)
         valeur1 = (-1 / v_corpus) * log
         pp = math.exp(valeur1)
-        print(pp)
 
     if (len(key) == 2):
 
         for i in range(0, len(test) - 2):
+
             A=""
             B=""
             key1 = test[i]+test[i+1]
-
             key2 = test[i + 2]
 
             if not(key1 in uselaplace):
-                print(key1)
+
                 A = key1
                 key1 = "<UNK>"
 
             if not(key2 in uselaplace[key]):
-                print(key2)
+
                 B = key2
                 key2 = "<UNK>"
 
             log += math.log(uselaplace[key1][key2])
 
-            print(key1, key2, uselaplace[key1][key2])
 
         valeur1 = (-1 / v_corpus) * log
         pp = math.exp(valeur1)
-        print("la perp",pp)
 
     return pp
 
-def detect_language(n,langue,fich_txt,fich_test):
+#Calul de la PP
+#Prend en entrée un fichier lisser par Laplace
+#Un fichier test
+#Renvoie la PP
+
+#print(perplexity(lissage_laplace(bi_grmo("corpus_entrainement/espanol-training.txt",True,True),"corpus_entrainement/espanol-training.txt",True,1),"corpus_test/test2.txt"))
+#print(perplexity(lissage_laplace(tri_grmo("corpus_entrainement/espanol-training.txt",True,True),"corpus_entrainement/espanol-training.txt",True,1),"corpus_test/test2.txt"))
+#print(perplexity(lissage_laplace(uni_gr("corpus_entrainement/espanol-training.txt",False,True),"corpus_entrainement/espanol-training.txt",True,1),"corpus_test/test1.txt"))
 
 
-
-    # if(n == "UNI"):
-    #
-    #     for i in langue:
-    #         print("---------", i)
-    #         lot[i] = lissage_laplace(uni_gr("corpus_entrainement/" + i, False, True), "corpus_entrainement/" + i, True,
-    #                                  1)
-    #     UNI=copy.deepcopy(uni_gr("corpus_entrainement" + fich_txt, False, True))
-    #
-    # #BI=perplexity(lissage_laplace(bi_grmo("corpus_entrainement"+fich_txt, True, True),"corpus_entrainement"+fich_txt, True, 1), "corpus_test/"+fich_test)
-    #
-    # #TRI=perplexity(lissage_laplace(tri_grmo("corpus_entrainement"+fich_txt, True, True),"corpus_entrainement"+fich_txt, True, 1), "corpus_test/"+fich_test)
-
+def detect_language(n):
 
     listtest = os.listdir('corpus_test/')
     listent = os.listdir('corpus_entrainement/')
-    #print(listent)
     langue = {}
+    if(n=="UNI"):
 
-    for j in listent:
+        for j in listent:
+            if (j == ".DS_Store"):
+
+                pass
+
+            else:
+                langue[j] = {}
+
+                for i in listtest:
+
+                    if (i==".DS_Store"):
+
+                        pass
+
+                    else:
+
+                        langue[j][i]={n: perplexity(lissage_laplace(uni_gr("corpus_entrainement/" + j, False, True),"corpus_entrainement/" + j, True, 1),"corpus_test/" + i)}
+
+    if (n == "BI"):
+
+        for j in listent:
 
 
+            if not(j == ".DS_Store"):
 
-        if (j == ".DS_Store"):
+                lissabi = lissage_laplace(bi_grmo("corpus_entrainement/" + j, True, True), "corpus_entrainement/" + j,True, 10)
+                langue[j] = {}
 
-            pass
+                for i in listtest:
 
-        else:
+                    if not(i == ".DS_Store"):
 
-            langue[j] = {}
+                        langue[j][i] = {n: perplexity(lissabi, "corpus_test/" + i)}
 
-            for i in listtest:
+    if (n == "TRI"):
 
-                if (i==".DS_Store"):
+        for j in listent:
 
-                    pass
+            if not (j == ".DS_Store"):
+                lissabi = lissage_laplace(tri_grmo("corpus_entrainement/" + j, True, True), "corpus_entrainement/" + j,True, 1)
 
-                else:
+                langue[j] = {}
 
+                for i in listtest:
 
-                    langue[j][i]={n: perplexity(lissage_laplace(uni_gr("corpus_entrainement/" + j, False, True),"corpus_entrainement/" + j, True, 1),"corpus_test/" + i)}
-                    # print("la valeur de A",A)
-    #
+                    if not (i == ".DS_Store"):
 
-    # lot={}
-    #
-    #
-    # for i in langue:
-    #
-    # n=perplexity(lissage_laplace(uni_gr("corpus_entrainement" + fich_txt, False, True), "corpus_entrainement" + fich_txt, True,1), "corpus_test/" + fich_test)
-
+                        langue[j][i] = {n: perplexity(lissabi, "corpus_test/" + i)}
 
     return langue
 
+#Renvoie la PP d'un modèle par rapport à tous les fichiers test dans un dictionnaire
 
-#print(detect_language("UNI",None,None,None))
-
+# print(detect_language("UNI"))
+# print(detect_language("TRI"))
+# print(detect_language("BI"))
 
 
 def prédiction(langue,n):
+
     i=0
     listkey= []
     listkeyKey=[]
+
+    dicograph={"english":{"spp":0,"nb":0,"key":{}},"espanol":{"spp":0,"nb":0,"key":{}},"french":{"spp":0,"nb":0,"key":{}},"portuguese":{"spp":0,"nb":0,"key":{}}}
+
 
     for key in langue:
 
@@ -449,8 +492,7 @@ def prédiction(langue,n):
     for key in langue[key]:
 
         listkeyKey+=[key]
-
-
+        #print(key)
     for key in listkeyKey:
 
         b=1000000000.0
@@ -459,41 +501,54 @@ def prédiction(langue,n):
 
 
             a=langue[key2][key]
-            print("voila",float(a[n]))
 
             if(float(a[n])<=b):
 
                 b=float(a[n])
-                print("------<>")
                 c=key2
 
         i+=1
 
         a=re.search("([\w\W]*)-", c)
+        dicograph[a.group(1)]["spp"]+=b
+        dicograph[a.group(1)]["nb"]+=1
+        dicograph[a.group(1)]["key"]["goodP"+str(i)]=key
 
         print("Pour un",n,"-gram la langue prédite du fichier: ",key,"\n Est le\la:",a.group(1))
 
-prédiction(detect_language("UNI",None,None,None),"UNI")
+    return dicograph
 
+#Ici je teste et récupère pour tout les modèles d'entraînement la plus petite valeur de la perpléxité pour un fichier test
+#Je précise ensuite la langue du fichier test
 
+# print(prédiction(detect_language("BI"),"BI"))
+# print(prédiction(detect_language("UNI"),"UNI"))
+# print(prédiction(detect_language("TRI"),"TRI"))
 
+#Fonction pour afficher les graphes
+import matplotlib.pyplot as plt
 
+def graphFile(langue):
 
+    x = [1000, 2000, 3000]
 
+    ALL_PP = perplexity(lissage_laplace(bi_grmo("corpus_entrainement/"+langue+"-training.txt",True,True),"corpus_entrainement/"+langue+"-training.txt",True,1),"nchar/1000.txt"),perplexity(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1),"nchar/2000.txt") ,perplexity(lissage_laplace(bi_grmo("corpus_entrainement/english-training.txt",True,True),"corpus_entrainement/english-training.txt",True,1),"nchar/3000.txt")
 
+    plt.plot(x, ALL_PP, label=langue)
 
+    plt.title('PP de ' + 'test' + str(langue) + '.txt' + ' en fonction du modèle de langue')
+    plt.ylabel('Perplexité')
+    plt.xlabel('Modele bi-gram (1000, 2000, 3000)')
+    plt.legend()
+    plt.show()
 
-
-
-
-
-
-
-
-
-
-
-
+#
+# graphFile("french")
+#
+# graphFile("espanol")
+# graphFile("english")
+#
+# graphFile("portuguese")
 
 
 

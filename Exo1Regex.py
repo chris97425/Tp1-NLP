@@ -1,9 +1,11 @@
+#Version de python utilisé 3.6.1
+
 import re , os, codecs
 
 def get_wfb_info(pays,attribut):
     """
     Travaille TP1 Langage Naturel 
-    :param pays: pays commençant par une majuscule 
+    :param pays: pays commençant par une majuscule
     :param attribut: attribut correspondant à la liste suivante ["NATIONAL_ANTHEM","LITERACY","EXPORTS","GDP_REAL_GROWTH_RATE","GDP_PER_CAPITA","EXECUTIVE_BRANCH","DIPLOMATIC_REPRESENTATION_FROM_US", "NATURAL_HAZARDS"]
     :return: la valeur (String) qui match avec la regex de l'attribut pour un pays donné
     """
@@ -23,7 +25,7 @@ def get_wfb_info(pays,attribut):
 
         if (filetoOpen==None) or (pays == ""):
 
-            pays = input("Je suis désolé mais le pays entré en paramètre n'ait pas dans ma base, verifier l'orthographe et rééssayer: ")
+            pays = input("Je suis désolé mais le pays entré en paramètre n'est pas dans ma base, verifier l'orthographe et rééssayer: ")
 
         else:
             sortie=False
@@ -148,5 +150,6 @@ def get_wfb_info(pays,attribut):
             return "No_diplomatic_rep"
 
     fichWork.close()
-get_wfb_info("France", "DIPLOMATIC_REPRESENTATION_FROM_US")
-##############Faire une fonction menu qui permet de lancer le test ou bien un attribut pour un pays choisie
+
+
+#get_wfb_info("France", "DIPLOMATIC_REPRESENTATION_FROM_US")
